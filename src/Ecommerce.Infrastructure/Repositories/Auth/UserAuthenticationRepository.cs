@@ -73,5 +73,10 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
 
             return result == "1" || result.Equals("true", StringComparison.CurrentCultureIgnoreCase);
         }
+
+        public Task<User> UpdateUserProfile(User User)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

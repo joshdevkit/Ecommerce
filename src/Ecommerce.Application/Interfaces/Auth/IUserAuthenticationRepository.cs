@@ -9,5 +9,7 @@ namespace Ecommerce.Application.Interfaces.Auth
         Task<string> RegisterAsync(User user, string password);
         Task<User?> GetUserByEmailAsync(string email);
         Task<bool> EmailExistsAsync(string email);
+
+        Task<User> UpdateUserProfile(User User);
     }
 }
