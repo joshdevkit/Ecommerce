@@ -4,14 +4,9 @@ using MediatR;
 
 namespace Ecommerce.Application.Commands.Auth
 {
-    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterResponse>
+    public class RegisterCommandHandler(IUserAuthenticationRepository repository) : IRequestHandler<RegisterCommand, RegisterResponse>
     {
-        private readonly IUserAuthenticationRepository _repository;
-
-        public RegisterCommandHandler(IUserAuthenticationRepository repository)
-        {
-            _repository = repository;
-        }
+        private readonly IUserAuthenticationRepository _repository = repository;
 
         public async Task<RegisterResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
         {

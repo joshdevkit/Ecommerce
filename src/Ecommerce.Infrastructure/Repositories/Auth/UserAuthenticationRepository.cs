@@ -74,9 +74,22 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
             return result == "1" || result.Equals("true", StringComparison.CurrentCultureIgnoreCase);
         }
 
-        public Task<User> UpdateUserProfile(User User)
+        public async Task<User> UpdateUserProfile(User User)
         {
-            throw new NotImplementedException();
+            var dictionary = new Dictionary<string, object>();
+            dictionary.Add("@UserId", User.UserId);
+            dictionary.Add("@FirstName", User.FirstName);
+            dictionary.Add("@LastName", User.LastName);
+            dictionary.Add("@PhoneNumber", User.PhoneNumber ?? (object)DBNull.Value);
+
+            var response = await dbconn.ExecuteToDataTableAsync(
+                "[Authentication].[SP_UpdateUserProfile]",
+                dictionary,
+                CommandType.StoredProcedure
+            );
+
+            var users = dbconn.ConvertDataTableToList<User>(response);
+            return users.First();
         }
     }
 }
