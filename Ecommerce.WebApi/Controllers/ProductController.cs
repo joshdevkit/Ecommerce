@@ -1,4 +1,5 @@
-﻿using Ecommerce.Application.Queries.Product;
+﻿using Ecommerce.Application.Commands.Products;
+using Ecommerce.Application.Queries.Product;
 using Ecommerce.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,14 @@ namespace Ecommerce.WebApi.Controllers
         {
             var products = await _mediator.Send(new GetAllProductsQuery());
             return Ok(products);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<Product>> Update([FromBody] UpdateProductCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            return Ok(result);
         }
     }
 }
