@@ -1,4 +1,4 @@
-﻿using Ecommerce.Application.Queries.Product;
+﻿using Ecommerce.Application.Commands.Auth;
 using Ecommerce.Infrastructure;
 using Ecommerce.Infrastructure.Constants;
 using MediatR;
@@ -18,7 +18,7 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblies(
         Assembly.GetExecutingAssembly(),            
-        typeof(GetAllProductsQueryHandler).Assembly    
+        typeof(GetUserWantsToAuthenticateHandler).Assembly    
     );
 });
 
