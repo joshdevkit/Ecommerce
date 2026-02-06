@@ -1,6 +1,6 @@
-﻿namespace Ecommerce.Application.DTOs
+﻿namespace Ecommerce.Domain.Entities
 {
-    public class ProductDto
+    public class ProductRaw
     {
         public int Id { get; set; }
         public string SKU { get; set; } = string.Empty;
@@ -29,4 +29,5 @@
 
         public string CreatedByUserName { get; set; } = string.Empty;
     }
+
 }

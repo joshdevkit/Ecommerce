@@ -5,7 +5,7 @@ namespace Ecommerce.Application.Interfaces
 {
     public interface IProductRepository
     {
-        Task<List<Product>> GetAllProductAsync();
+        Task<List<ProductRaw>> GetAllProductAsync();
 
         Task<string> UpdateProductAsync(Product product);
 

@@ -9,7 +9,7 @@ namespace Ecommerce.Infrastructure.Repositories
     {
         private readonly DBConnection _db = db;
 
-        public async Task<List<Product>> GetAllProductAsync()
+        public async Task<List<ProductRaw>> GetAllProductAsync()
         {
             DataTable dt = await _db.ExecuteToDataTableAsync(
             "[Administration].[SP_GetAllProducts]",
@@ -17,7 +17,9 @@ namespace Ecommerce.Infrastructure.Repositories
             CommandType.StoredProcedure
             );
 
-            return _db.ConvertDataTableToList<Product>(dt);
+            var response = _db.ConvertDataTableToList<ProductRaw>(dt);
+
+            return response;
         }
 
         public async Task<bool> RemoveProductAsync(Product product)

@@ -2,14 +2,9 @@
 
 namespace Ecommerce.Infrastructure.Data
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork(DBConnection db) : IUnitOfWork
     {
-        private readonly DBConnection _db;
-
-        public UnitOfWork(DBConnection db)
-        {
-            _db = db;
-        }
+        private readonly DBConnection _db = db;
 
         public void BeginTransaction()
         {

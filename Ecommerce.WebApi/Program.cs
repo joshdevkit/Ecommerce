@@ -1,26 +1,19 @@
-﻿using Ecommerce.Application.Commands.Auth;
-using Ecommerce.Infrastructure;
+﻿using Ecommerce.Infrastructure;
 using Ecommerce.Infrastructure.Constants;
-using MediatR;
+using Ecommerce.WebApi.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Reflection;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssemblies(
-        Assembly.GetExecutingAssembly(),            
-        typeof(GetUserWantsToAuthenticateHandler).Assembly    
-    );
-});
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -83,6 +76,8 @@ builder.Services.AddAuthorizationBuilder()
         policy.RequireRole("Admin"));
 
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

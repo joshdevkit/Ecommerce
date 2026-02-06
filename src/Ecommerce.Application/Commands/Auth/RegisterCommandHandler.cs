@@ -4,9 +4,7 @@ using Ecommerce.Application.Interfaces.Auth;
 using Ecommerce.Domain.Common;
 using Ecommerce.Domain.Entities;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace Ecommerce.Application.Commands.Auth
 {
@@ -36,7 +34,7 @@ namespace Ecommerce.Application.Commands.Auth
                     FirstName = request.FirstName,
                     LastName = request.LastName,
                     PhoneNumber = request.PhoneNumber,
-                    Role = "User" // default role
+                    Role = "User" 
                 };
 
                 var registrationResult = await _repository.RegisterAsync(user, request.Password);
