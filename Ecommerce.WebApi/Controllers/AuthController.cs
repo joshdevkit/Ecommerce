@@ -15,9 +15,14 @@ namespace Ecommerce.WebApi.Controllers
         {
             var result = await _mediator.Send(command);
 
-            if (!result.Success) return Unauthorized(result);
-
-            return Ok(result);
+            var (user, token) = result.Value!;
+            return Ok(new
+            {
+                Success = true,
+                result.Message,
+                User = user,
+                Token = token
+            });
         }
 
         [HttpPost("register")]
@@ -27,7 +32,14 @@ namespace Ecommerce.WebApi.Controllers
 
             if (!result.Success) return BadRequest(result);
 
-            return Ok(result);
+            var user = result.Value!;
+
+            return Ok(new
+            {
+                Success = true,
+                result.Message,
+                User = user
+            });
         }
     }
 }

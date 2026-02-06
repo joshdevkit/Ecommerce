@@ -1,27 +1,22 @@
-﻿using Ecommerce.Application.Commands.Auth;
-using Ecommerce.Application.Interfaces;
+﻿using Ecommerce.Application.Interfaces;
+using Ecommerce.Domain.Common;
 using Ecommerce.Domain.Entities;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ecommerce.Application.Commands.Products
 {
-    public class UpdateProductCommandHandler(IProductRepository repository, IUnitOfWork unitOfWork) : IRequestHandler<UpdateProductCommand, UpdateResponse>
+    public class UpdateProductCommandHandler(IProductRepository repository, IUnitOfWork unitOfWork) : IRequestHandler<UpdateProductCommand, Result<Product>>
     {
         private readonly IProductRepository _repository = repository;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-        public async Task<UpdateResponse> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
+        public async Task<Result<Product>> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
         {
             try
             {
                 _unitOfWork.BeginTransaction();
 
-                var payload = new Product
+                var product = new Product
                 {
                     Id = request.Id,
                     Name = request.Name,
@@ -30,29 +25,21 @@ namespace Ecommerce.Application.Commands.Products
                     Stock = request.Stock
                 };
 
-                var result = await _repository.UpdateProductAsync(payload);
+                var updateResult = await _repository.UpdateProductAsync(product);
 
                 _unitOfWork.Commit();
 
-                return new UpdateResponse
-                {
-                    Success = result == "Success",
-                    Message = result
-                };
+                if (updateResult == "Success")
+                    return Result<Product>.Ok(product);
 
+                return Result<Product>.Fail(updateResult);
             }
             catch (Exception ex)
             {
                 _unitOfWork.Rollback();
 
-                return new UpdateResponse
-                {
-                    Success = false,
-                    Message = $"An error occurred while updating the product: {ex.Message}"
-                };
-
+                return Result<Product>.Fail($"An error occurred while updating the product: {ex.Message}");
             }
         }
-
     }
 }

@@ -2,12 +2,14 @@
 using Ecommerce.Application.Queries.Product;
 using Ecommerce.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ecommerce.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class ProductController(IMediator _mediator) : ControllerBase
     {
         [HttpGet]
@@ -18,11 +20,13 @@ namespace Ecommerce.WebApi.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<Product>> Update([FromBody] UpdateProductCommand command)
+        public async Task<IActionResult> Update([FromBody] UpdateProductCommand command)
         {
             var result = await _mediator.Send(command);
 
-            return Ok(result);
+            return result.Success
+            ? Ok(result.Value)
+            : BadRequest(result.Message);
         }
     }
 }

@@ -1,34 +1,42 @@
 ﻿using Ecommerce.Application.DTOs;
+using Ecommerce.Application.Interfaces;
 using Ecommerce.Application.Interfaces.Auth;
+using Ecommerce.Domain.Common;
 using MediatR;
 
 namespace Ecommerce.Application.Commands.Auth
 {
-    public class GetUserWantsToAuthenticateHandler(
-        IUserAuthenticationRepository repository,
-        ITokenGenerator tokenGenerator) : IRequestHandler<LoginCommand, LoginResponse>
+    public class GetUserWantsToAuthenticateHandler : IRequestHandler<LoginCommand, Result<(UserDto User, string Token)>>
     {
-        private readonly IUserAuthenticationRepository _repository = repository;
-        private readonly ITokenGenerator _tokenGenerator = tokenGenerator;
+        private readonly IUserAuthenticationRepository _repository;
+        private readonly ITokenGenerator _tokenGenerator;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public GetUserWantsToAuthenticateHandler(
+            IUserAuthenticationRepository repository,
+            ITokenGenerator tokenGenerator,
+            IUnitOfWork unitOfWork)
         {
-            var user = await _repository.LoginAsync(request.Email, request.Password);
+            _repository = repository;
+            _tokenGenerator = tokenGenerator;
+            _unitOfWork = unitOfWork;
+        }
 
-            if (user == null)
+        public async Task<Result<(UserDto User, string Token)>> Handle(LoginCommand request, CancellationToken cancellationToken)
+        {
+            try
             {
-                return new LoginResponse
+                _unitOfWork.BeginTransaction();
+
+                var user = await _repository.LoginAsync(request.Email, request.Password);
+
+                if (user == null)
                 {
-                    Success = false,
-                    Message = "Invalid crendentials provided"
-                };
-            }
+                    _unitOfWork.Rollback();
+                    return Result<(UserDto, string)>.Fail("Invalid credentials provided");
+                }
 
-            return new LoginResponse
-            {
-                Success = true,
-                Message = "Login successful",
-                User = new UserDto
+                var userDto = new UserDto
                 {
                     UserId = user.UserId,
                     Email = user.Email,
@@ -36,9 +44,20 @@ namespace Ecommerce.Application.Commands.Auth
                     LastName = user.LastName,
                     PhoneNumber = user.PhoneNumber,
                     Role = user.Role
-                },
-                Token = _tokenGenerator.GenerateToken(user)
-            };
+                };
+
+                var token = _tokenGenerator.GenerateToken(user);
+
+                _unitOfWork.Commit();
+
+                return Result<(UserDto, string)>.Ok((userDto, token), "Login Successful");
+            }
+            catch (Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return Result<(UserDto, string)>.Fail($"An error occurred during login: {ex.Message}");
+            }
         }
     }
+
 }
