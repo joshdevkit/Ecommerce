@@ -15,15 +15,16 @@ namespace Ecommerce.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             string connectionString = configuration.GetConnectionString("DefaultConnection")
-                                     ?? throw new ArgumentNullException("DefaultConnection missing in appsettings.json");
+                                     ?? throw new ArgumentNullException(nameof(configuration));
 
             services.AddTransient(sp =>
             {
                 var configuration = sp.GetRequiredService<IConfiguration>();
-                var connString = configuration.GetConnectionString("DefaultConnection");
+                var connString = connectionString;
                 return new DBConnection(connString);
             });
 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IUserAuthenticationRepository, UserAuthenticationRepository>();

@@ -5,22 +5,22 @@ using System.Data;
 
 namespace Ecommerce.Infrastructure.Repositories.Auth
 {
-    public class UserAuthenticationRepository : IUserAuthenticationRepository
+    public class UserAuthenticationRepository(DBConnection db) : IUserAuthenticationRepository
     {
-        protected readonly DBConnection dbconn = new DBConnection();
+        private readonly DBConnection _db = db;
         public async Task<User?> LoginAsync(string email, string password)
         {
             var parameters = new Dictionary<string, object>();
             parameters.Add("@Email", email);
             parameters.Add("@Password", password);
 
-            DataTable dt = await dbconn.ExecuteToDataTableAsync(
+            DataTable dt = await _db.ExecuteToDataTableAsync(
                 "[Authentication].[SP_UserLogin]",
                 parameters,
                 CommandType.StoredProcedure
             );
 
-            var users = dbconn.ConvertDataTableToList<User>(dt);
+            var users = _db.ConvertDataTableToList<User>(dt);
             return users.FirstOrDefault();
         }
 
@@ -35,7 +35,7 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
             parameters.Add("@PhoneNumber", user.PhoneNumber ?? (object)DBNull.Value);
           
 
-            var result = await dbconn.ExecuteScalarAsync(
+            var result = await _db.ExecuteScalarAsync(
                 "[Authentication].[SP_UserRegistration]",
                 parameters,
                 CommandType.StoredProcedure
@@ -50,13 +50,13 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
             var parameters = new Dictionary<string, object>();
             parameters.Add("@Email", email);
 
-            DataTable dt = await dbconn.ExecuteToDataTableAsync(
+            DataTable dt = await _db.ExecuteToDataTableAsync(
             "[Authentication].[SP_GetUserByEmail]",
             parameters,
             CommandType.StoredProcedure
             );
 
-            var users = dbconn.ConvertDataTableToList<User>(dt);
+            var users = _db.ConvertDataTableToList<User>(dt);
             return users.FirstOrDefault();
         }
 
@@ -65,7 +65,7 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
             var parameters = new Dictionary<string, object>();
             parameters.Add("@Email", email);
 
-            string result = await dbconn.ExecuteScalarAsync(
+            string result = await _db.ExecuteScalarAsync(
                 "[Authentication].[SP_CheckEmailExists]",
                 parameters,
                 CommandType.StoredProcedure
@@ -82,13 +82,13 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
             dictionary.Add("@LastName", User.LastName);
             dictionary.Add("@PhoneNumber", User.PhoneNumber ?? (object)DBNull.Value);
 
-            var response = await dbconn.ExecuteToDataTableAsync(
+            var response = await _db.ExecuteToDataTableAsync(
                 "[Authentication].[SP_UpdateUserProfile]",
                 dictionary,
                 CommandType.StoredProcedure
             );
 
-            var users = dbconn.ConvertDataTableToList<User>(response);
+            var users = _db.ConvertDataTableToList<User>(response);
             return users.First();
         }
     }

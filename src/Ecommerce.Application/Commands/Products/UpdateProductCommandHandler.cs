@@ -10,38 +10,48 @@ using System.Threading.Tasks;
 
 namespace Ecommerce.Application.Commands.Products
 {
-    public class UpdateProductCommandHandler(IProductRepository repository) : IRequestHandler<UpdateProductCommand, UpdateResponse>
+    public class UpdateProductCommandHandler(IProductRepository repository, IUnitOfWork unitOfWork) : IRequestHandler<UpdateProductCommand, UpdateResponse>
     {
         private readonly IProductRepository _repository = repository;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         public async Task<UpdateResponse> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
         {
-            var payload = new Product
+            try
             {
-                Id = request.Id,
-                Name = request.Name,
-                Description = request.Description,
-                Price = request.Price,
-                Stock = request.Stock
-            };
+                _unitOfWork.BeginTransaction();
 
-            var result = await _repository.UpdateProductAsync(payload);
+                var payload = new Product
+                {
+                    Id = request.Id,
+                    Name = request.Name,
+                    Description = request.Description,
+                    Price = request.Price,
+                    Stock = request.Stock
+                };
 
+                var result = await _repository.UpdateProductAsync(payload);
 
-            if (result == "Success")
-            {
+                _unitOfWork.Commit();
+
                 return new UpdateResponse
                 {
-                    Success = true,
-                    Message = result.ToString()
+                    Success = result == "Success",
+                    Message = result
                 };
-            }
 
-            return new UpdateResponse
+            }
+            catch (Exception ex)
             {
-                Success = false,
-                Message = result.ToString()
-            };
+                _unitOfWork.Rollback();
+
+                return new UpdateResponse
+                {
+                    Success = false,
+                    Message = $"An error occurred while updating the product: {ex.Message}"
+                };
+
+            }
         }
 
     }

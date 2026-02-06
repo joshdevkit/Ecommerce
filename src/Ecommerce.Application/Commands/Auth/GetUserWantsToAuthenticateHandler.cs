@@ -34,7 +34,8 @@ namespace Ecommerce.Application.Commands.Auth
                     Email = user.Email,
                     FirstName = user.FirstName,
                     LastName = user.LastName,
-                    PhoneNumber = user.PhoneNumber
+                    PhoneNumber = user.PhoneNumber,
+                    Role = user.Role
                 },
                 Token = _tokenGenerator.GenerateToken(user)
             };

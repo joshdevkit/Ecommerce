@@ -146,8 +146,6 @@ namespace Ecommerce.Infrastructure.Data
 
         #endregion
 
-
-
         #region ExecuteToDataTable
 
         public DataTable ExecuteToDataTable(
@@ -296,9 +294,6 @@ namespace Ecommerce.Infrastructure.Data
 
             return list;
         }
-
-
-
 
         #region Dispose
 

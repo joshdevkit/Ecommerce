@@ -5,18 +5,19 @@ using System.Data;
 
 namespace Ecommerce.Infrastructure.Repositories
 {
-    public class ProductRepository : IProductRepository
+    public class ProductRepository(DBConnection db) : IProductRepository
     {
-        protected readonly DBConnection dbconn = new DBConnection();
+        private readonly DBConnection _db = db;
+
         public async Task<List<Product>> GetAllProductAsync()
         {
-            DataTable dt = await dbconn.ExecuteToDataTableAsync(
+            DataTable dt = await _db.ExecuteToDataTableAsync(
             "[Administration].[SP_GetAllProducts]",
             null,
             CommandType.StoredProcedure
             );
 
-            return dbconn.ConvertDataTableToList<Product>(dt);
+            return _db.ConvertDataTableToList<Product>(dt);
         }
 
         public async Task<bool> RemoveProductAsync(Product product)
@@ -24,7 +25,7 @@ namespace Ecommerce.Infrastructure.Repositories
             var dictionary = new Dictionary<string, object>();
             dictionary.Add("ProductId", product.Id);
 
-            var result = await dbconn.ExecuteCommandAsync("[Administration].[SP_RemoveProduct]", dictionary, CommandType.StoredProcedure);
+            var result = await _db.ExecuteCommandAsync("[Administration].[SP_RemoveProduct]", dictionary, CommandType.StoredProcedure);
             return result > 0;
         }
 
@@ -37,7 +38,7 @@ namespace Ecommerce.Infrastructure.Repositories
             dictionary.Add("Price", product.Price);
             dictionary.Add("Stock", product.Stock);
 
-            var result = await dbconn.ExecuteScalarAsync("[Administration].[SP_UpdateProduct]", dictionary, CommandType.StoredProcedure);
+            var result = await _db.ExecuteScalarAsync("[Administration].[SP_UpdateProduct]", dictionary, CommandType.StoredProcedure);
 
             return result;
         }
