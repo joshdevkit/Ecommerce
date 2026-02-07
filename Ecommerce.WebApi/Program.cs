@@ -1,5 +1,6 @@
 ﻿using Ecommerce.Infrastructure;
 using Ecommerce.Infrastructure.Constants;
+using Ecommerce.WebApi.Events;
 using Ecommerce.WebApi.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -7,13 +8,9 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen();
-
 
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -24,51 +21,55 @@ builder.Services.AddCors(options =>
         policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); 
+              .AllowCredentials();
     });
 });
+
+AppConstants.Jwt.Initialize(builder.Configuration);
 
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-
 .AddJwtBearer(options =>
 {
+    // Create signing key for signature verification (HMAC-SHA256)
+    var signingKey = new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(AppConstants.Jwt.Key)
+    );
+
+    // Create encryption key for token decryption (AES-256)
+    var encryptionKey = new SymmetricSecurityKey(
+        Encoding.UTF8.GetBytes(AppConstants.Jwt.EncryptionKey)
+    );
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
+        // Validate the token issuer (who created the token)
         ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
         ValidIssuer = AppConstants.Jwt.Issuer,
+
+        // Validate the token audience (who the token is intended for)
+        ValidateAudience = true,
         ValidAudience = AppConstants.Jwt.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AppConstants.Jwt.Key))
+
+        // Validate token expiration
+        ValidateLifetime = true,
+
+        // Validate the signing key
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = signingKey,
+
+        // Token decryption key for JWE tokens
+        TokenDecryptionKey = encryptionKey,
+
+        // No clock skew - tokens expire exactly at the specified time
+        ClockSkew = TimeSpan.Zero
     };
 
-    options.Events = new JwtBearerEvents
-    {
-        OnChallenge = context =>
-        {
-            context.HandleResponse();
-
-            context.Response.StatusCode = 401;
-            context.Response.ContentType = "application/json";
-            return context.Response.WriteAsync(
-                "{\"success\": false, \"message\": \"You are not authorized to access this resource\"}"
-            );
-        },
-
-        OnForbidden = context =>
-        {
-            context.Response.StatusCode = 403;
-            context.Response.ContentType = "application/json";
-            return context.Response.WriteAsync(
-                "{\"success\": false, \"message\": \"You cannot access this resource\"}"
-            );
-        }
-    };
+    // Attach custom events to handle authentication failures and forbidden responses
+    options.Events = new JwtAuthenticationEvents();
 });
 
 builder.Services.AddAuthorizationBuilder()
@@ -86,12 +87,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("AllowFrontend");
-
-
 //app.UseHttpsRedirection();
 
+// CRITICAL: Authentication must come BEFORE Authorization
 app.UseAuthentication();
-
 app.UseAuthorization();
 
 app.MapControllers();

@@ -13,7 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-
 namespace Ecommerce.Infrastructure
 {
     public static class DependencyInjection
@@ -21,24 +20,22 @@ namespace Ecommerce.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             string connectionString = configuration.GetConnectionString("DefaultConnection")
-                                     ?? throw new ArgumentNullException(nameof(configuration));
+                                     ?? throw new ArgumentNullException(nameof(configuration), "DefaultConnection string is missing");
 
             // Register DBConnection as transient because it is a lightweight wrapper around SqlConnection,
             // and we want to ensure that each repository gets a new instance of DBConnection to manage its own connection and transaction scope.
             services.AddTransient(sp =>
             {
-                var configuration = sp.GetRequiredService<IConfiguration>();
                 var connString = connectionString;
                 return new DBConnection(connString);
             });
 
             // Register all validators from the assembly containing All Validators available
-            services.AddValidatorsFromAssembly(typeof(RegisterCommandValidator).Assembly);
-
+            services.AddValidatorsFromAssembly(typeof(AuthenticationCommandValidator).Assembly);
             services.AddTransient(typeof(IPipelineBehavior<,>),
                 typeof(ValidationBehavior<,>));
 
-            // since repositories and services are in different assemblies, we need to register them separately
+            // Since repositories and services are in different assemblies, we need to register them separately
             // and we can use assembly scanning to register all handlers in the application layer
             services.AddMediatR(cfg =>
             {
@@ -48,17 +45,15 @@ namespace Ecommerce.Infrastructure
                 );
             });
 
-
             // UnitOfWork is registered as scoped because it manages the lifetime of the database connection and transaction,
             // which should be shared within a single request but not across multiple requests.
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // Register repositories and services
             services.AddTokenGeneratorFactory(configuration);
+            services.AddTokenValidatorFactory(configuration); 
             services.AddProductRepository(configuration);
             services.AddAuthenticationFeatures(configuration);
-
-            
 
             return services;
         }
@@ -66,6 +61,11 @@ namespace Ecommerce.Infrastructure
         public static IServiceCollection AddTokenGeneratorFactory(this IServiceCollection services, IConfiguration configuration)
         {
             return services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
+        }
+
+        public static IServiceCollection AddTokenValidatorFactory(this IServiceCollection services, IConfiguration configuration)
+        {
+            return services.AddScoped<ITokenValidator, JwtTokenValidator>();
         }
 
         public static IServiceCollection AddAuthenticationFeatures(this IServiceCollection services, IConfiguration configuration)

@@ -1,6 +1,9 @@
 ﻿using Ecommerce.Application.Commands.Auth;
+using Ecommerce.Application.Queries.Auth;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Ecommerce.WebApi.Controllers
 {
@@ -41,5 +44,24 @@ namespace Ecommerce.WebApi.Controllers
                 User = user
             });
         }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> UserAuth()
+        {
+            var email = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            var user = await _mediator.Send(new GetUserByEmailQuery
+            {
+                Email = email
+            });
+
+            return Ok(new
+            {
+                Success = true,
+                user
+            });
+        }
+
     }
 }

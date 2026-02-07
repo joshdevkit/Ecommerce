@@ -6,21 +6,14 @@ using MediatR;
 
 namespace Ecommerce.Application.Commands.Auth
 {
-    public class GetUserWantsToAuthenticateHandler : IRequestHandler<LoginCommand, Result<(UserDto User, string Token)>>
+    public class GetUserWantsToAuthenticateHandler(
+        IUserAuthenticationRepository repository,
+        ITokenGenerator tokenGenerator,
+        IUnitOfWork unitOfWork) : IRequestHandler<LoginCommand, Result<(UserDto User, string Token)>>
     {
-        private readonly IUserAuthenticationRepository _repository;
-        private readonly ITokenGenerator _tokenGenerator;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public GetUserWantsToAuthenticateHandler(
-            IUserAuthenticationRepository repository,
-            ITokenGenerator tokenGenerator,
-            IUnitOfWork unitOfWork)
-        {
-            _repository = repository;
-            _tokenGenerator = tokenGenerator;
-            _unitOfWork = unitOfWork;
-        }
+        private readonly IUserAuthenticationRepository _repository = repository;
+        private readonly ITokenGenerator _tokenGenerator = tokenGenerator;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         public async Task<Result<(UserDto User, string Token)>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {

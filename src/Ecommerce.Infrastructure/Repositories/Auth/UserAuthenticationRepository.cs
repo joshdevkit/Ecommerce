@@ -32,7 +32,7 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
             parameters.Add("@Password", password);
             parameters.Add("@FirstName", user.FirstName);
             parameters.Add("@LastName", user.LastName);
-            parameters.Add("@PhoneNumber", user.PhoneNumber ?? (object)DBNull.Value);
+            parameters.Add("@PhoneNumber", user.PhoneNumber);
           
 
             var result = await _db.ExecuteScalarAsync(
@@ -58,6 +58,7 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
 
             var users = _db.ConvertDataTableToList<User>(dt);
             return users.FirstOrDefault();
+
         }
 
         public async Task<bool> EmailExistsAsync(string email)
@@ -74,7 +75,7 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
             return result == "1" || result.Equals("true", StringComparison.CurrentCultureIgnoreCase);
         }
 
-        public async Task<User> UpdateUserProfile(User User)
+        public async Task<string> UpdateUserProfile(User User)
         {
             var dictionary = new Dictionary<string, object>();
             dictionary.Add("@UserId", User.UserId);
@@ -82,14 +83,14 @@ namespace Ecommerce.Infrastructure.Repositories.Auth
             dictionary.Add("@LastName", User.LastName);
             dictionary.Add("@PhoneNumber", User.PhoneNumber ?? (object)DBNull.Value);
 
-            var response = await _db.ExecuteToDataTableAsync(
+            var response = await _db.ExecuteScalarAsync(
                 "[Authentication].[SP_UpdateUserProfile]",
                 dictionary,
                 CommandType.StoredProcedure
             );
 
-            var users = _db.ConvertDataTableToList<User>(response);
-            return users.First();
+            
+            return response;
         }
     }
 }
