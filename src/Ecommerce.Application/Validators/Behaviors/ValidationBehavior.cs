@@ -19,10 +19,11 @@ namespace Ecommerce.Application.Validators.Behaviors
                 var context = new ValidationContext<TRequest>(request);
 
                 var failures = _validators
-                    .Select(v => v.Validate(context))
-                    .SelectMany(r => r.Errors)
-                    .Where(f => f != null)
-                    .ToList();
+                .Select(v => v.Validate(context))
+                .SelectMany(r => r.Errors)
+                .GroupBy(e => e.PropertyName) 
+                .Select(g => g.First())
+                .ToList();
 
                 if (failures.Count != 0)
                 {

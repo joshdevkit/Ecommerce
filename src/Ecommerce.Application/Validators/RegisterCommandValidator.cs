@@ -21,8 +21,10 @@ namespace Ecommerce.Application.Validators
                 .Matches("[0-9]").WithMessage("Password must contain at least one number");
 
             RuleFor(x => x.PasswordConfirmation)
-                .NotEmpty().WithMessage("Confirm Password is required")
-                .Equal(x => x.Password).WithMessage("Passwords do not match");
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty().WithMessage("Confirm Password is required")
+            .Equal(x => x.Password).WithMessage("Passwords do not match")
+            .When(x => !string.IsNullOrWhiteSpace(x.Password));
 
             RuleFor(x => x.FirstName)
                 .NotEmpty().WithMessage("First name is required")
@@ -33,9 +35,9 @@ namespace Ecommerce.Application.Validators
                 .MaximumLength(50);
 
             RuleFor(x => x.PhoneNumber)
-                .Matches(@"^\+?[0-9]{10,15}$")
-                .When(x => !string.IsNullOrEmpty(x.PhoneNumber))
-                .WithMessage("Invalid phone number format");
+             .NotEmpty().WithMessage("Phone number is required")
+             .Matches(@"^\+?[0-9]{10,15}$").WithMessage("Invalid phone number format");
+
         }
     }
 }

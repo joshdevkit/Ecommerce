@@ -16,6 +16,8 @@ namespace Ecommerce.Infrastructure.Constants
 
             public static int ExpiryMinutes { get; private set; } = 60;
 
+            public static string CookieName { get; set; } = string.Empty;
+
             public static void Initialize(IConfiguration configuration)
             {
                 Key = configuration["Jwt:Key"]
@@ -29,6 +31,10 @@ namespace Ecommerce.Infrastructure.Constants
 
                 Audience = configuration["Jwt:Audience"]
                     ?? throw new InvalidOperationException("Jwt:Audience is missing in configuration.");
+
+                CookieName = configuration["Jwt:CookieName"]
+                ?? throw new InvalidOperationException("Jwt:CookieName is missing in configuration.");
+
 
                 if (int.TryParse(configuration["Jwt:ExpiryMinutes"], out int expiry))
                 {

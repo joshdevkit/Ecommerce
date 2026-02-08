@@ -2,10 +2,10 @@
 {
     public class Brand
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Slug { get; set; } = string.Empty;
-        public string MetaTitle { get; set; } = string.Empty;
-        public string MetaDescription { get; set; } = string.Empty;
+        public int BrandID { get; set; }
+        public string BrandName { get; set; } = string.Empty;
+        public string BrandSlug { get; set; } = string.Empty;
+        public string BrandMetaTitle { get; set; } = string.Empty;
+        public string BrandMetaDescription { get; set; } = string.Empty;
     }
 }

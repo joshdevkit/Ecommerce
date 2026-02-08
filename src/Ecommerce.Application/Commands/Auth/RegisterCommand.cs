@@ -11,6 +11,6 @@ namespace Ecommerce.Application.Commands.Auth
         public string PasswordConfirmation { get; set; } = string.Empty;
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
-        public string? PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
     }
 }

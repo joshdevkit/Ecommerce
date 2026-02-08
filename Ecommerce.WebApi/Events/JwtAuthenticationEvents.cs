@@ -1,10 +1,20 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Ecommerce.Infrastructure.Constants;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text.Json;
 
 namespace Ecommerce.WebApi.Events
 {
     public class JwtAuthenticationEvents : JwtBearerEvents
     {
+        public override Task MessageReceived(MessageReceivedContext context)
+        {
+            if (context.Request.Cookies.TryGetValue(AppConstants.Jwt.CookieName, out var token))
+            {
+                context.Token = token;
+            }
+
+            return Task.CompletedTask;
+        }
         public override Task Challenge(JwtBearerChallengeContext context)
         {
             context.HandleResponse();
