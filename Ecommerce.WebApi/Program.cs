@@ -4,6 +4,7 @@ using Ecommerce.WebApi.Events;
 using Ecommerce.WebApi.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,7 +66,24 @@ builder.Services.AddAuthentication(options =>
         TokenDecryptionKey = encryptionKey,
 
         // No clock skew - tokens expire exactly at the specified time
-        ClockSkew = TimeSpan.Zero
+        ClockSkew = TimeSpan.Zero,
+
+        RoleClaimType = ClaimTypes.Role,
+        NameClaimType = ClaimTypes.NameIdentifier
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // Look for token in cookie
+            var token = context.Request.Cookies[AppConstants.Jwt.CookieName];
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token; 
+            }
+            return Task.CompletedTask;
+        }
     };
 
     // Attach custom events to handle authentication failures and forbidden responses
@@ -88,8 +106,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowFrontend");
 //app.UseHttpsRedirection();
-
-// CRITICAL: Authentication must come BEFORE Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 

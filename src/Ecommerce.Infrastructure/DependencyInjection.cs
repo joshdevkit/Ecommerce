@@ -1,10 +1,12 @@
 ﻿using Ecommerce.Application.Commands.Auth;
 using Ecommerce.Application.Interfaces;
+using Ecommerce.Application.Interfaces.Admin;
 using Ecommerce.Application.Interfaces.Auth;
 using Ecommerce.Application.Validators;
 using Ecommerce.Application.Validators.Behaviors;
 using Ecommerce.Infrastructure.Data;
 using Ecommerce.Infrastructure.Repositories;
+using Ecommerce.Infrastructure.Repositories.Admin;
 using Ecommerce.Infrastructure.Repositories.Auth;
 using Ecommerce.Infrastructure.Services;
 using FluentValidation;
@@ -51,9 +53,10 @@ namespace Ecommerce.Infrastructure
 
             // Register repositories and services
             services.AddTokenGeneratorFactory(configuration);
-            services.AddTokenValidatorFactory(configuration); 
+            services.AddTokenValidatorFactory(configuration);
             services.AddProductRepository(configuration);
             services.AddAuthenticationFeatures(configuration);
+            services.AddAdminRepositories(configuration);
 
             return services;
         }
@@ -76,6 +79,11 @@ namespace Ecommerce.Infrastructure
         public static IServiceCollection AddProductRepository(this IServiceCollection services, IConfiguration configuration)
         {
             return services.AddScoped<IProductRepository, ProductRepository>();
+        }
+
+        public static IServiceCollection AddAdminRepositories(this IServiceCollection services, IConfiguration configuration)
+        {
+            return services.AddScoped<IAdminUserRepository, AdminUserRepository>();
         }
     }
 }

@@ -40,6 +40,7 @@ namespace Ecommerce.Infrastructure.Services
                 IssuerSigningKey = signingKey,
                 TokenDecryptionKey = encryptionKey, // Critical for JWE decryption
                 ClockSkew = TimeSpan.Zero // No tolerance for expired tokens
+
             };
 
             _tokenHandler = new JwtSecurityTokenHandler();
@@ -68,7 +69,6 @@ namespace Ecommerce.Infrastructure.Services
                 var tokenParts = token.Split('.');
                 if (tokenParts.Length != 5)
                 {
-                    // This is not a JWE token, reject it
                     return null;
                 }
 

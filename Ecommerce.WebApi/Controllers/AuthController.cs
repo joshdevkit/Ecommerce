@@ -28,14 +28,13 @@ namespace Ecommerce.WebApi.Controllers
                 {
                     HttpOnly = true,
                     Secure = !_env.IsDevelopment(),
-
                     SameSite = _env.IsProduction()
                         ? SameSiteMode.Strict
                         : SameSiteMode.Lax,
-
                     Expires = DateTime.UtcNow.AddMinutes(
                         AppConstants.Jwt.ExpiryMinutes
-                    )
+                    ),
+                    Path = "/" 
                 }
             );
 
